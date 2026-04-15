@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Protocolo Bariátrico 21</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family:'Poppins',sans-serif; background:#F5F3FF; min-height:100vh; }
+.app-wrapper { max-width:480px; margin:0 auto; background:#fff; min-height:100vh; }
+.app-header { background:linear-gradient(135deg,#7C3AED,#5B21B6); padding:16px; position:sticky; top:0; z-index:100; }
+.header-logo { font-size:16px; font-weight:800; color:#fff; }
+.bottom-nav { position:fixed; bottom:0; left:50%; transform:translateX(-50%); width:100%; max-width:480px; background:#fff; border-top:1px solid #E5E7EB; display:flex; z-index:100; }
+.nav-item { flex:1; display:flex; flex-direction:column; align-items:center; padding:10px 4px; cursor:pointer; border:none; background:transparent; font-family:'Poppins',sans-serif; transition:all 0.2s; }
+.nav-item.active .nav-icon { color:#7C3AED; }
+.nav-item.active .nav-label { color:#7C3AED; font-weight:600; }
+.nav-icon { font-size:20px; color:#9CA3AF; }
+.nav-label { font-size:10px; color:#9CA3AF; margin-top:2px; }
+.page { display:none; padding:16px 16px 90px; }
+.page.active { display:block; }
+.welcome-banner { background:linear-gradient(135deg,#7C3AED,#16A34A); border-radius:20px; padding:20px; margin-bottom:20px; color:#fff; }
+.welcome-day { font-size:12px; opacity:0.8; text-transform:uppercase; letter-spacing:0.06em; }
+.welcome-title { font-size:22px; font-weight:800; margin:4px 0; }
+.welcome-sub { font-size:13px; opacity:0.85; }
+.section-title { font-size:16px; font-weight:700; color:#1a1a1a; margin-bottom:12px; }
+.progress-card { background:#F5F3FF; border-radius:16px; padding:16px; margin-bottom:12px; }
+.progress-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; }
+.progress-label { font-size:14px; font-weight:600; color:#1a1a1a; }
+.progress-pct { font-size:14px; font-weight:700; color:#7C3AED; }
+.progress-bar { height:10px; background:#E9D5FF; border-radius:99px; overflow:hidden; }
+.progress-fill { height:100%; background:linear-gradient(90deg,#7C3AED,#16A34A); border-radius:99px; transition:width 0.5s; }
+.progress-days { font-size:12px; color:#6B7280; margin-top:6px; }
+.days-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:4px; margin-bottom:20px; }
+.day-cell { aspect-ratio:1; border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:600; cursor:pointer; transition:all 0.2s; border:1.5px solid #E5E7EB; background:#fff; color:#9CA3AF; }
+.day-cell.done { background:#16A34A; border-color:#16A34A; color:#fff; }
+.day-cell.today { border-color:#7C3AED; color:#7C3AED; background:#F5F3FF; }
+.day-cell.locked { background:#F9FAFB; color:#D1D5DB; cursor:default; }
+.stat-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:20px; }
+.stat-card { background:#fff; border:1px solid #E5E7EB; border-radius:14px; padding:14px; text-align:center; }
+.stat-emoji { font-size:28px; display:block; margin-bottom:6px; }
+.stat-value { font-size:22px; font-weight:800; color:#7C3AED; }
+.stat-label { font-size:11px; color:#6B7280; margin-top:2px; }
+.today-recipe { background:#fff; border:2px solid #7C3AED; border-radius:16px; padding:16px; margin-bottom:20px; }
+.today-badge { background:#7C3AED; color:#fff; font-size:11px; font-weight:700; padding:3px 10px; border-radius:99px; display:inline-block; margin-bottom:8px; text-transform:uppercase; }
+.today-recipe-name { font-size:16px; font-weight:700; color:#1a1a1a; margin-bottom:4px; }
+.today-recipe-desc { font-size:13px; color:#6B7280; margin-bottom:12px; }
+.btn-ver-receita { width:100%; padding:12px; background:#7C3AED; color:#fff; border:none; border-radius:12px; font-size:14px; font-weight:700; font-family:'Poppins',sans-serif; cursor:pointer; }
+.recipe-card { background:#fff; border:1px solid #E5E7EB; border-radius:16px; padding:16px; margin-bottom:12px; cursor:pointer; transition:all 0.2s; }
+.recipe-card:hover { border-color:#7C3AED; background:#F5F3FF; }
+.recipe-name { font-size:15px; font-weight:700; color:#1a1a1a; }
+.recipe-desc { font-size:12px; color:#6B7280; margin-top:3px; line-height:1.5; }
+.recipe-meta { display:flex; gap:8px; margin-top:8px; flex-wrap:wrap; }
+.recipe-tag { font-size:11px; padding:3px 10px; border-radius:99px; font-weight:600; }
+.tag-kcal { background:#FEF3C7; color:#92400E; }
+.tag-tempo { background:#DBEAFE; color:#1E40AF; }
+.tag-dif { background:#DCFCE7; color:#166534; }
+.recipe-detail { display:none; }
+.recipe-detail.active { display:block; }
+.recipe-back { display:flex; align-items:center; gap:8px; color:#7C3AED; font-size:14px; font-weight:600; cursor:pointer; margin-bottom:16px; background:none; border:none; font-family:'Poppins',sans-serif; padding:0; }
+.recipe-detail-name { font-size:22px; font-weight:800; color:#1a1a1a; margin-bottom:8px; }
+.recipe-detail-desc { font-size:14px; color:#6B7280; margin-bottom:16px; line-height:1.6; }
+.recipe-info-row { display:flex; gap:8px; margin-bottom:20px; flex-wrap:wrap; }
+.info-pill { padding:6px 14px; border-radius:99px; font-size:13px; font-weight:600; }
+.ingredientes-title { font-size:16px; font-weight:700; color:#7C3AED; margin-bottom:10px; }
+.ingrediente-item { display:flex; align-items:flex-start; gap:10px; padding:8px 0; border-bottom:1px solid #F3F4F6; font-size:14px; color:#374151; }
+.ingrediente-item::before { content:'•'; color:#7C3AED; font-weight:700; flex-shrink:0; }
+.preparo-title { font-size:16px; font-weight:700; color:#16A34A; margin-bottom:10px; margin-top:20px; }
+.preparo-item { display:flex; gap:12px; padding:10px 0; border-bottom:1px solid #F3F4F6; font-size:14px; color:#374151; line-height:1.5; }
+.preparo-num { width:28px; height:28px; background:#7C3AED; color:#fff; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:700; flex-shrink:0; }
+.dica-box { background:#EDE9FE; border-radius:12px; padding:14px; margin-top:16px; font-size:13px; color:#4C1D95; line-height:1.6; }
+.dica-box strong { color:#7C3AED; }
+.imc-card { background:linear-gradient(135deg,#7C3AED,#5B21B6); border-radius:20px; padding:24px; margin-bottom:20px; color:#fff; text-align:center; }
+.imc-result { font-size:56px; font-weight:800; line-height:1; }
+.imc-label { font-size:14px; opacity:0.85; margin-top:4px; }
+.imc-category { display:inline-block; margin-top:12px; padding:6px 16px; border-radius:99px; font-size:14px; font-weight:700; background:rgba(255,255,255,0.2); }
+.imc-inputs { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:16px; }
+.imc-field label { display:block; font-size:13px; font-weight:600; color:#374151; margin-bottom:6px; }
+.imc-field input { width:100%; padding:12px; border:1.5px solid #E5E7EB; border-radius:12px; font-size:16px; font-family:'Poppins',sans-serif; text-align:center; font-weight:700; outline:none; }
+.imc-field input:focus { border-color:#7C3AED; }
+.btn-calcular { width:100%; padding:14px; background:#7C3AED; color:#fff; border:none; border-radius:12px; font-size:15px; font-weight:700; font-family:'Poppins',sans-serif; cursor:pointer; }
+.imc-tabela { background:#fff; border:1px solid #E5E7EB; border-radius:16px; overflow:hidden; margin:16px 0; }
+.imc-tabela-header { background:#7C3AED; padding:12px 16px; font-size:14px; font-weight:700; color:#fff; }
+.imc-tabela-row { display:flex; justify-content:space-between; padding:10px 16px; border-bottom:1px solid #F3F4F6; font-size:13px; }
+.imc-tabela-row:last-child { border-bottom:none; }
+.imc-dot { width:10px; height:10px; border-radius:50%; margin-right:8px; display:inline-block; }
+.bonus-card { background:#fff; border:1px solid #E5E7EB; border-radius:16px; padding:16px; margin-bottom:12px; }
+.bonus-header { display:flex; align-items:center; gap:12px; margin-bottom:10px; }
+.bonus-icon { width:48px; height:48px; border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:24px; flex-shrink:0; }
+.bonus-title { font-size:15px; font-weight:700; color:#1a1a1a; }
+.bonus-sub { font-size:12px; color:#6B7280; }
+.bonus-content { font-size:13px; color:#374151; line-height:1.7; }
+.bonus-item { padding:6px 0; border-bottom:1px solid #F3F4F6; }
+.bonus-item:last-child { border-bottom:none; }
+.bonus-item strong { color:#7C3AED; }
+.checklist-week { background:#fff; border:1px solid #E5E7EB; border-radius:16px; overflow:hidden; margin-bottom:12px; }
+.week-header { background:#7C3AED; padding:12px 16px; display:flex; justify-content:space-between; align-items:center; }
+.week-title { font-size:14px; font-weight:700; color:#fff; }
+.week-meta { font-size:12px; color:rgba(255,255,255,0.8); }
+.week-objetivo { padding:10px 16px; background:#F5F3FF; font-size:13px; color:#4C1D95; border-bottom:1px solid #E5E7EB; }
+.check-item-row { display:flex; align-items:center; gap:12px; padding:12px 16px; border-bottom:1px solid #F3F4F6; cursor:pointer; transition:background 0.15s; }
+.check-item-row:last-child { border-bottom:none; }
+.check-item-row:hover { background:#F9FAFB; }
+.check-item-row.checked { background:#F0FDF4; }
+.check-circle { width:24px; height:24px; border-radius:50%; border:2px solid #D1D5DB; display:flex; align-items:center; justify-content:center; flex-shrink:0; transition:all 0.2s; color:transparent; font-size:12px; font-weight:700; }
+.check-item-row.checked .check-circle { background:#16A34A; border-color:#16A34A; color:#fff; }
+.check-day-num { font-size:13px; font-weight:700; color:#374151; min-width:40px; }
+.check-day-num.checked { color:#16A34A; }
+.check-day-text { font-size:13px; color:#6B7280; flex:1; }
+.check-day-text.checked { color:#16A34A; }
+
+/* ASSISTENTE */
+.page-chat { display:none; padding:16px 16px 0; height:calc(100vh - 56px); flex-direction:column; }
+.page-chat.active { display:flex; }
+.chat-header-card { background:linear-gradient(135deg,#7C3AED,#16A34A); border-radius:16px; padding:14px 16px; margin-bottom:12px; display:flex; align-items:center; gap:12px; flex-shrink:0; }
+.chat-avatar { width:44px; height:44px; background:rgba(255,255,255,0.2); border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:22px; flex-shrink:0; }
+.chat-nome { font-size:14px; font-weight:700; color:#fff; }
+.chat-status { display:flex; align-items:center; gap:6px; margin-top:3px; }
+.chat-dot { width:7px; height:7px; background:#4ADE80; border-radius:50%; animation:blink 2s infinite; }
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+.chat-status-txt { font-size:11px; color:rgba(255,255,255,0.8); }
+.sugestoes { display:flex; gap:6px; flex-wrap:wrap; margin-bottom:10px; flex-shrink:0; }
+.sugestao { padding:6px 12px; background:#F5F3FF; border:1px solid #DDD6FE; border-radius:99px; font-size:11px; color:#7C3AED; font-weight:600; cursor:pointer; font-family:'Poppins',sans-serif; white-space:nowrap; }
+.sugestao:hover { background:#EDE9FE; }
+.chat-msgs { flex:1; overflow-y:auto; display:flex; flex-direction:column; gap:10px; padding-bottom:8px; }
+.msg { display:flex; gap:8px; align-items:flex-end; }
+.msg.user { flex-direction:row-reverse; }
+.msg-av { width:30px; height:30px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:14px; flex-shrink:0; background:#EDE9FE; }
+.msg.user .msg-av { background:#DCFCE7; }
+.msg-buble { max-width:78%; padding:10px 14px; border-radius:16px; font-size:13px; line-height:1.6; background:#F3F4F6; color:#1a1a1a; }
+.msg.user .msg-buble { background:#7C3AED; color:#fff; border-radius:16px 16px 4px 16px; }
+.msg.bot .msg-buble { border-radius:16px 16px 16px 4px; }
+.typing { display:flex; gap:4px; padding:10px 14px; background:#F3F4F6; border-radius:16px 16px 16px 4px; width:fit-content; }
+.typing span { width:7px; height:7px; background:#9CA3AF; border-radius:50%; animation:tp 1.2s infinite; }
+.typing span:nth-child(2){animation-delay:.2s}
+.typing span:nth-child(3){animation-delay:.4s}
+@keyframes tp { 0%,60%,100%{transform:translateY(0)} 30%{transform:translateY(-7px)} }
+.chat-input-row { display:flex; gap:8px; align-items:flex-end; padding:10px 0 16px; border-top:1px solid #E5E7EB; flex-shrink:0; }
+.chat-input { flex:1; padding:12px 14px; border:1.5px solid #E5E7EB; border-radius:14px; font-size:14px; font-family:'Poppins',sans-serif; resize:none; outline:none; max-height:80px; line-height:1.4; }
+.chat-input:focus { border-color:#7C3AED; }
+.btn-send { width:44px; height:44px; background:#7C3AED; border:none; border-radius:12px; color:#fff; font-size:18px; cursor:pointer; display:flex; align-items:center; justify-content:center; flex-shrink:0; transition:all 0.2s; }
+.btn-send:hover { background:#6D28D9; }
+.btn-send:disabled { background:#D1D5DB; cursor:default; }
+
+.toast { position:fixed; bottom:80px; left:50%; transform:translateX(-50%); background:#1a1a1a; color:#fff; padding:10px 20px; border-radius:99px; font-size:13px; font-weight:600; z-index:999; opacity:0; transition:opacity 0.3s; white-space:nowrap; }
+.toast.show { opacity:1; }
+</style>
+</head>
+<body>
+<div class="toast" id="toast"></div>
+<div class="app-wrapper">
+  <div class="app-header">
+    <div class="header-logo">🍮 Protocolo Bariátrico 21</div>
+  </div>
+
+  <!-- HOME -->
+  <div class="page active" id="pageHome">
+    <div class="welcome-banner">
+      <div class="welcome-day" id="welcomeDay">DIA 1 DE 21</div>
+      <div class="welcome-title">Olá! Bem-vinda! 👋</div>
+      <div class="welcome-sub">Continue sua jornada de transformação</div>
+    </div>
+    <div class="section-title">Seu progresso</div>
+    <div class="progress-card">
+      <div class="progress-header"><span class="progress-label">Protocolo 21 Dias</span><span class="progress-pct" id="progressPct">0%</span></div>
+      <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+      <div class="progress-days" id="progressDays">0 de 21 dias concluídos</div>
+    </div>
+    <div class="section-title">Dias do protocolo</div>
+    <div class="days-grid" id="daysGrid"></div>
+    <div class="stat-grid">
+      <div class="stat-card"><span class="stat-emoji">🔥</span><div class="stat-value" id="statDias">0</div><div class="stat-label">Dias concluídos</div></div>
+      <div class="stat-card"><span class="stat-emoji">⚡</span><div class="stat-value" id="statSeq">0</div><div class="stat-label">Sequência atual</div></div>
+    </div>
+    <div class="section-title">Receita de hoje</div>
+    <div class="today-recipe" id="todayRecipe"></div>
+  </div>
+
+  <!-- RECEITAS -->
+  <div class="page" id="pageReceitas">
+    <div id="receitasList"><div class="section-title" style="margin-bottom:16px">📖 Todas as Receitas</div><div id="receitasContainer"></div></div>
+    <div id="receitaDetalhe" class="recipe-detail"></div>
+  </div>
+
+  <!-- CHECKLIST -->
+  <div class="page" id="pageChecklist">
+    <div class="section-title" style="margin-bottom:16px">✅ Checklist dos 21 Dias</div>
+    <div id="checklistContainer"></div>
+  </div>
+
+  <!-- IMC -->
+  <div class="page" id="pageImc">
+    <div class="section-title" style="margin-bottom:16px">⚖️ Calculadora de IMC</div>
+    <div class="imc-card" id="imcCard"><div class="imc-result" id="imcResult">--</div><div class="imc-label">Seu IMC</div><div class="imc-category" id="imcCategory">Calcule abaixo</div></div>
+    <div class="imc-inputs">
+      <div class="imc-field"><label>Peso (kg)</label><input type="number" id="imcPeso" placeholder="70"></div>
+      <div class="imc-field"><label>Altura (cm)</label><input type="number" id="imcAltura" placeholder="165"></div>
+    </div>
+    <button class="btn-calcular" onclick="calcularIMC()">Calcular IMC</button>
+    <div class="imc-tabela">
+      <div class="imc-tabela-header">Tabela de Referência</div>
+      <div class="imc-tabela-row"><span><span class="imc-dot" style="background:#3B82F6"></span>Abaixo do peso</span><span style="color:#6B7280">Menor que 18,5</span></div>
+      <div class="imc-tabela-row"><span><span class="imc-dot" style="background:#16A34A"></span>Peso normal</span><span style="color:#6B7280">18,5 – 24,9</span></div>
+      <div class="imc-tabela-row"><span><span class="imc-dot" style="background:#F59E0B"></span>Sobrepeso</span><span style="color:#6B7280">25,0 – 29,9</span></div>
+      <div class="imc-tabela-row"><span><span class="imc-dot" style="background:#EF4444"></span>Obesidade I</span><span style="color:#6B7280">30,0 – 34,9</span></div>
+      <div class="imc-tabela-row"><span><span class="imc-dot" style="background:#DC2626"></span>Obesidade II</span><span style="color:#6B7280">35,0 – 39,9</span></div>
+      <div class="imc-tabela-row"><span><span class="imc-dot" style="background:#7F1D1D"></span>Obesidade III</span><span style="color:#6B7280">Maior que 40</span></div>
+    </div>
+  </div>
+
+  <!-- BÔNUS -->
+  <div class="page" id="pageBonus">
+    <div class="section-title" style="margin-bottom:16px">🎁 Conteúdo Bônus</div>
+    <div class="bonus-card">
+      <div class="bonus-header"><div class="bonus-icon" style="background:#FEF3C7">🥤</div><div><div class="bonus-title">Smoothies Emagrecedores</div><div class="bonus-sub">5 receitas que aceleram o metabolismo</div></div></div>
+      <div class="bonus-content">
+        <div class="bonus-item"><strong>🍓 Smoothie Detox Rosa</strong><br>Morango + água de coco + gengibre + limão. Tome em jejum.</div>
+        <div class="bonus-item"><strong>🥑 Smoothie Verde Poderoso</strong><br>Espinafre + pepino + limão + água gelada + hortelã.</div>
+        <div class="bonus-item"><strong>🍌 Smoothie Proteico Banana</strong><br>Banana congelada + leite vegetal + canela + whey.</div>
+        <div class="bonus-item"><strong>🫐 Smoothie Antioxidante Azul</strong><br>Mirtilo + iogurte grego + mel + chia.</div>
+        <div class="bonus-item"><strong>🥭 Smoothie Tropical Detox</strong><br>Manga + abacaxi + água de coco + cúrcuma.</div>
+      </div>
+    </div>
+    <div class="bonus-card">
+      <div class="bonus-header"><div class="bonus-icon" style="background:#DCFCE7">🥗</div><div><div class="bonus-title">Receitas Fit da Semana</div><div class="bonus-sub">Refeições saudáveis e saborosas</div></div></div>
+      <div class="bonus-content">
+        <div class="bonus-item"><strong>🍳 Omelete de Espinafre</strong><br>2 ovos + espinafre + queijo cottage. 15 min.</div>
+        <div class="bonus-item"><strong>🥙 Wrap Integral de Frango</strong><br>Frango + folhas + tomate + iogurte. 20 min.</div>
+        <div class="bonus-item"><strong>🍲 Sopa Detox de Legumes</strong><br>Abobrinha + cenoura + frango + gengibre.</div>
+        <div class="bonus-item"><strong>🥘 Bowl de Quinoa</strong><br>Quinoa + brócolis + cenoura + azeite + limão.</div>
+        <div class="bonus-item"><strong>🫕 Frango com Batata Doce</strong><br>Frango + batata-doce + alho + azeite + ervas.</div>
+      </div>
+    </div>
+    <div class="bonus-card">
+      <div class="bonus-header"><div class="bonus-icon" style="background:#EDE9FE">💡</div><div><div class="bonus-title">Hábitos Aceleradores</div><div class="bonus-sub">Potencialize seus resultados</div></div></div>
+      <div class="bonus-content">
+        <div class="bonus-item"><strong>☀️ Ritual Matinal</strong><br>400ml de água com limão + 15 min de sol ao acordar.</div>
+        <div class="bonus-item"><strong>🚶 Movimento Pós-Refeição</strong><br>10-15 min de caminhada após almoço e jantar.</div>
+        <div class="bonus-item"><strong>😴 Protocolo do Sono</strong><br>Desligue telas 1h antes de dormir.</div>
+        <div class="bonus-item"><strong>🧘 Respiração 4-7-8</strong><br>Inspire 4s, segure 7s, expire 8s. Reduz cortisol.</div>
+        <div class="bonus-item"><strong>💧 Hidratação Estratégica</strong><br>400ml ao acordar + 200ml antes de cada refeição.</div>
+      </div>
+    </div>
+    <div class="bonus-card">
+      <div class="bonus-header"><div class="bonus-icon" style="background:#FCE7F3">📋</div><div><div class="bonus-title">Lista de Compras</div><div class="bonus-sub">Tudo que você precisa na semana</div></div></div>
+      <div class="bonus-content">
+        <div class="bonus-item"><strong>🛒 Proteínas:</strong> Gelatina em pó sem sabor, iogurte grego, ovos, frango</div>
+        <div class="bonus-item"><strong>🥦 Vegetais:</strong> Espinafre, brócolis, abobrinha, cenoura, pepino, tomate</div>
+        <div class="bonus-item"><strong>🍓 Frutas:</strong> Morango, limão, maçã, abacaxi, frutas vermelhas congeladas</div>
+        <div class="bonus-item"><strong>🌾 Grãos:</strong> Chia, quinoa, aveia, batata-doce</div>
+        <div class="bonus-item"><strong>🧴 Temperos:</strong> Canela, gengibre, cúrcuma, cacau 100%, adoçante natural</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ASSISTENTE IA -->
+  <div class="page-chat" id="pageAssistente">
+    <div class="chat-header-card">
+      <div class="chat-avatar">🤖</div>
+      <div>
+        <div class="chat-nome">Assistente Bariátrica</div>
+        <div class="chat-status"><div class="chat-dot"></div><span class="chat-status-txt">Online — pronta para ajudar</span></div>
+      </div>
+    </div>
+    <div class="sugestoes">
+      <button class="sugestao" onclick="enviarSugestao(this)">Quantas calorias devo comer?</button>
+      <button class="sugestao" onclick="enviarSugestao(this)">Posso substituir a gelatina?</button>
+      <button class="sugestao" onclick="enviarSugestao(this)">Não estou vendo resultado</button>
+      <button class="sugestao" onclick="enviarSugestao(this)">Dicas para controlar ansiedade</button>
+      <button class="sugestao" onclick="enviarSugestao(this)">Posso beber álcool?</button>
+    </div>
+    <div class="chat-msgs" id="chatMsgs"></div>
+    <div class="chat-input-row">
+      <textarea class="chat-input" id="chatInput" placeholder="Digite sua dúvida..." rows="1" onkeydown="handleKey(event)"></textarea>
+      <button class="btn-send" id="btnSend" onclick="enviarMsg()">➤</button>
+    </div>
+  </div>
+
+  <nav class="bottom-nav">
+    <button class="nav-item active" onclick="showPage('home',this)"><span class="nav-icon">🏠</span><span class="nav-label">Início</span></button>
+    <button class="nav-item" onclick="showPage('receitas',this)"><span class="nav-icon">🍮</span><span class="nav-label">Receitas</span></button>
+    <button class="nav-item" onclick="showPage('checklist',this)"><span class="nav-icon">✅</span><span class="nav-label">Checklist</span></button>
+    <button class="nav-item" onclick="showPage('imc',this)"><span class="nav-icon">⚖️</span><span class="nav-label">IMC</span></button>
+    <button class="nav-item" onclick="showPage('assistente',this)"><span class="nav-icon">🤖</span><span class="nav-label">IA</span></button>
+  </nav>
+</div>
+
+<script>
+const receitas = [
+  {id:1,dia:1,nome:'Gelatina FIT de Maçã com Canela',desc:'Sabor de sobremesa clássica com mais saciedade e leveza',tempo:'25 min',kcal:'55 Kcal',ingredientes:['10g de gelatina incolor em pó','250ml de chá de maçã','1 maçã picada','Canela em pó a gosto','1 colher de chia','Adoçante natural a gosto'],preparo:['Prepare o chá de maçã bem forte','Dissolva a gelatina ainda quente','Adicione a maçã picada, chia e canela','Misture bem','Leve à geladeira por 4 horas'],dica:'Use maçã verde para sabor mais refrescante. A chia aumenta a saciedade.'},
+  {id:2,dia:2,nome:'Gelatina FIT de Café com Canela',desc:'Termogênica natural que dá energia e reduz a vontade de doce',tempo:'20 min',kcal:'45 Kcal',ingredientes:['10g de gelatina em pó sem sabor','250ml de café forte sem açúcar','1 colher (chá) de canela em pó','1 pitada de cacau em pó 100%','Adoçante natural a gosto'],preparo:['Hidrate a gelatina em água fria por 5 min','Aqueça o café e dissolva a gelatina','Adicione canela e cacau','Adoce e misture','Leve à geladeira por 4 horas'],dica:'Prepare à noite para ter pronto no café da manhã.'},
+  {id:3,dia:3,nome:'Gelatina FIT de Iogurte com Limão',desc:'Cremosa, leve e probiótica',tempo:'10 min',kcal:'64 Kcal',ingredientes:['10g de gelatina em pó sem sabor','200ml de iogurte natural desnatado','Suco de 1 limão','Raspas de limão a gosto','Adoçante natural a gosto'],preparo:['Hidrate a gelatina em água fria','Dissolva em água quente','Misture ao iogurte com suco e raspas','Adoce e misture','Leve à geladeira por 3 horas'],dica:'Probióticos do iogurte melhoram a saúde intestinal.'},
+  {id:4,dia:4,nome:'Gelatina FIT de Cacau Zero',desc:'Para quem não abre mão do chocolate',tempo:'10 min',kcal:'55 Kcal',ingredientes:['10g de gelatina em pó sem sabor','200ml de leite vegetal sem açúcar','2 colheres de cacau em pó 100%','1 pitada de canela','Adoçante a gosto'],preparo:['Hidrate a gelatina','Aqueça o leite e dissolva a gelatina','Adicione cacau e canela','Misture e adoce','Leve à geladeira por 4 horas'],dica:'Cacau 100% reduz a ansiedade e compulsão por doce.'},
+  {id:5,dia:5,nome:'Gelatina FIT de Frutas Vermelhas com Chia',desc:'Rica em fibras e antioxidantes',tempo:'15 min',kcal:'50 Kcal',ingredientes:['10g de gelatina em pó sem sabor','250ml de água','1 xícara de frutas vermelhas congeladas','1 colher de chia','Adoçante a gosto'],preparo:['Hidrate a gelatina','Dissolva em água morna','Bata as frutas e misture à gelatina','Adicione chia','Leve à geladeira por 3 horas'],dica:'Frutas vermelhas combatem inflamação e aceleram queima de gordura.'},
+  {id:6,dia:6,nome:'Gelatina FIT de Coco com Abacaxi',desc:'Refrescante e tropical',tempo:'20 min',kcal:'70 Kcal',ingredientes:['10g de gelatina em pó sem sabor','200ml de leite de coco light','100g de abacaxi picado','Coco ralado sem açúcar','Adoçante a gosto'],preparo:['Hidrate a gelatina','Aqueça leite de coco e dissolva','Adicione abacaxi','Adoce e despeje em potinhos','Leve à geladeira por 4 horas'],dica:'Abacaxi tem bromelina que melhora digestão.'},
+  {id:7,dia:7,nome:'Gelatina FIT de Chá Verde com Gengibre',desc:'A mais funcional do protocolo',tempo:'20 min',kcal:'30 Kcal',ingredientes:['10g de gelatina em pó sem sabor','300ml de chá verde forte','1 colher (chá) de gengibre ralado','Suco de meio limão','Adoçante a gosto'],preparo:['Prepare chá verde com gengibre','Coe e hidrate a gelatina','Dissolva e adicione limão','Adoce','Leve à geladeira por 4 horas'],dica:'Trio poderoso para acelerar metabolismo.'},
+  {id:8,dia:8,nome:'Gelatina FIT Cremosa com Iogurte e Baunilha',desc:'Textura de mousse, sabor de sobremesa',tempo:'15 min',kcal:'80 Kcal',ingredientes:['15g de gelatina em pó sem sabor','250ml de água','200g de iogurte natural desnatado','1 colher de essência de baunilha','Adoçante a gosto'],preparo:['Dissolva a gelatina na água morna','Bata no liquidificador com iogurte e baunilha','Despeje em potinhos','Leve à geladeira por 3-4 horas'],dica:'Bater incorpora ar, deixando textura aerada como mousse.'},
+  {id:9,dia:9,nome:'Gelatina FIT de Hibisco com Laranja',desc:'Anti-inflamatória e diurética',tempo:'15 min',kcal:'35 Kcal',ingredientes:['10g de gelatina em pó sem sabor','300ml de chá de hibisco','Suco de 1 laranja pequena','Raspas de laranja','Adoçante a gosto'],preparo:['Prepare chá de hibisco e coe','Dissolva a gelatina no chá morno','Adicione suco e raspas','Adoce','Leve à geladeira por 3 horas'],dica:'Hibisco reduz retenção de líquidos e inchaço.'},
+  {id:10,dia:10,nome:'Gelatina FIT de Morango com Hortelã',desc:'Refrescante e antioxidante',tempo:'10 min',kcal:'45 Kcal',ingredientes:['10g de gelatina em pó sem sabor','200g de morangos','250ml de água','6 folhas de hortelã','Adoçante a gosto'],preparo:['Bata morangos com água','Dissolva a gelatina na mistura morna','Adicione hortelã picada','Adoce','Leve à geladeira por 3 horas'],dica:'Morango rico em vitamina C aumenta sensibilidade à insulina.'},
+  {id:11,dia:11,nome:'Gelatina FIT de Abóbora com Canela',desc:'Cremosa e reconfortante',tempo:'30 min',kcal:'60 Kcal',ingredientes:['10g de gelatina em pó sem sabor','200g de abóbora cozida','200ml de leite vegetal','1 colher (chá) de canela','Adoçante a gosto'],preparo:['Cozinhe e amasse a abóbora','Aqueça leite e dissolva gelatina','Bata tudo com canela','Adoce e despeje em potinhos','Leve à geladeira por 4 horas'],dica:'Canela regula a glicemia e reduz compulsão.'},
+  {id:12,dia:12,nome:'Gelatina FIT de Melancia com Limão',desc:'Ultra hidratante',tempo:'10 min',kcal:'40 Kcal',ingredientes:['10g de gelatina em pó sem sabor','300g de melancia sem sementes','Suco de 1 limão','250ml de água'],preparo:['Bata melancia com água','Dissolva gelatina na mistura morna','Adicione limão','Leve à geladeira por 3 horas'],dica:'Melancia tem 92% de água e melhora circulação.'},
+  {id:13,dia:13,nome:'Gelatina FIT de Cúrcuma com Leite de Coco',desc:'Anti-inflamatória poderosa',tempo:'15 min',kcal:'65 Kcal',ingredientes:['10g de gelatina em pó sem sabor','250ml de leite de coco light','1 colher (chá) de cúrcuma','1 pitada de pimenta-do-reino','Adoçante a gosto'],preparo:['Aqueça o leite de coco','Dissolva a gelatina','Adicione cúrcuma e pimenta','Misture e adoce','Leve à geladeira por 4 horas'],dica:'Pimenta aumenta absorção da curcumina em 2000%.'},
+  {id:14,dia:14,nome:'Gelatina FIT de Maracujá',desc:'O sabor que você ama com menos caloria',tempo:'15 min',kcal:'75 Kcal',ingredientes:['10g de gelatina em pó sem sabor','Polpa de 2 maracujás','200ml de leite desnatado','2 colheres de leite condensado light'],preparo:['Dissolva a gelatina em água morna','Bata no liquidificador com leite e polpa','Adoce se necessário','Leve à geladeira por 4 horas'],dica:'Maracujá reduz ansiedade e melhora o sono.'},
+  {id:15,dia:15,nome:'Gelatina FIT Detox de Pepino',desc:'Ultra leve — apenas 25 calorias',tempo:'10 min',kcal:'25 Kcal',ingredientes:['10g de gelatina em pó sem sabor','1 pepino médio descascado','300ml de água','8 folhas de hortelã','Suco de 1 limão'],preparo:['Bata pepino com água e coe','Dissolva gelatina em parte da mistura morna','Junte tudo com limão e hortelã','Leve à geladeira por 3 horas'],dica:'A receita mais leve do protocolo.'},
+  {id:16,dia:16,nome:'Gelatina FIT de Banana com Amendoim',desc:'Cremosa e altamente saciante',tempo:'15 min',kcal:'90 Kcal',ingredientes:['10g de gelatina em pó sem sabor','1 banana madura','200ml de leite vegetal','1 colher de pasta de amendoim natural'],preparo:['Bata banana com leite','Dissolva gelatina em água morna e adicione','Adicione amendoim e bata','Leve à geladeira por 4 horas'],dica:'Banana tem triptofano que vira serotonina.'},
+  {id:17,dia:17,nome:'Gelatina FIT de Cereja com Cacau',desc:'Melhora o sono e queima gordura',tempo:'20 min',kcal:'55 Kcal',ingredientes:['10g de gelatina em pó sem sabor','200g de cerejas congeladas','250ml de água','1 colher de cacau 100%'],preparo:['Bata cerejas com água e coe','Dissolva gelatina na mistura morna','Adicione cacau','Leve à geladeira por 3 horas'],dica:'Cereja tem melatonina natural — consuma à noite.'},
+  {id:18,dia:18,nome:'Gelatina FIT Proteica de Whey',desc:'Alta proteína, baixíssima caloria',tempo:'10 min',kcal:'95 Kcal',ingredientes:['10g de gelatina em pó sem sabor','250ml de água ou leite vegetal','1 dose de whey protein baunilha'],preparo:['Dissolva gelatina em água morna','Deixe esfriar','Misture o whey','Leve à geladeira por 3 horas'],dica:'20g de proteína por porção — a mais saciante.'},
+  {id:19,dia:19,nome:'Gelatina FIT de Limonada Suíça',desc:'Cremosa e irresistível',tempo:'10 min',kcal:'70 Kcal',ingredientes:['10g de gelatina em pó sem sabor','Suco de 3 limões','150ml de leite de coco light','150ml de água'],preparo:['Dissolva gelatina na água morna','Adicione leite de coco e limão','Misture bem','Leve à geladeira por 3 horas'],dica:'Limão auxilia na absorção de colágeno e queima de gordura.'},
+  {id:20,dia:20,nome:'Gelatina FIT de Ameixa com Canela',desc:'Reguladora do intestino',tempo:'15 min',kcal:'50 Kcal',ingredientes:['10g de gelatina em pó sem sabor','6 ameixas secas sem caroço','300ml de água','1 colher (chá) de canela'],preparo:['Cozinhe ameixas na água','Bata e passe pela peneira','Dissolva gelatina na mistura','Adicione canela','Leve à geladeira por 4 horas'],dica:'Ameixa regula intestino e reduz inchaço.'},
+  {id:21,dia:21,nome:'Gelatina FIT Celebração',desc:'A receita especial do Dia 21!',tempo:'20 min',kcal:'85 Kcal',ingredientes:['10g de gelatina em pó sem sabor','200ml de iogurte grego natural','100g de frutas vermelhas','1 colher de mel puro','1 colher de chia'],preparo:['Dissolva gelatina em água morna','Misture ao iogurte e mel','Adicione metade das frutas amassadas','Leve à geladeira por 3 horas','Finalize com frutas e chia'],dica:'Parabéns pelos 21 dias! Continue com 1 gelatina por dia!'}
+];
+
+const checklistDias = [
+  {semana:1,objetivo:'Começar e criar o hábito',missao:'1 gelatina por dia + 2 litros de água',dias:[
+    {n:1,desc:'Prepare sua primeira gelatina. Beba 2L de água.'},
+    {n:2,desc:'Consuma a gelatina à tarde. Evite doces industrializados.'},
+    {n:3,desc:'Mantenha o horário certo. Prepare com antecedência.'},
+    {n:4,desc:'Como se sente? Continue consistente.'},
+    {n:5,desc:'5 dias! Sinta a diferença no inchaço.'},
+    {n:6,desc:'Descanse bem. O sono é parte do protocolo.'},
+    {n:7,desc:'1ª semana completa! Tire uma foto e compare.'}
+  ]},
+  {semana:2,objetivo:'Reduzir a compulsão e estabilizar',missao:'2 gelatinas por dia + testar receitas novas',dias:[
+    {n:8,desc:'Adicione a segunda gelatina: tarde + após jantar.'},
+    {n:9,desc:'Observe a redução da compulsão noturna.'},
+    {n:10,desc:'10 dias! Você está na metade. Parabéns!'},
+    {n:11,desc:'Varie as receitas. Descubra sua favorita.'},
+    {n:12,desc:'O metabolismo está respondendo. Sente mais energia?'},
+    {n:13,desc:'Foco na hidratação: 2,5L de água mínimo.'},
+    {n:14,desc:'2ª semana! A compulsão por doce diminuiu?'}
+  ]},
+  {semana:3,objetivo:'Consolidar e ver resultados reais',missao:'2 gelatinas + 20 min de movimento leve',dias:[
+    {n:15,desc:'Adicione 20 minutos de caminhada à rotina.'},
+    {n:16,desc:'Observe as roupas. Estão mais folgadas?'},
+    {n:17,desc:'Meça a cintura e compare com o dia 1.'},
+    {n:18,desc:'Sono, energia e humor estão melhores?'},
+    {n:19,desc:'Prepare 2 receitas de uma vez para ter estoque.'},
+    {n:20,desc:'Últimos 2 dias! Você está incrível!'},
+    {n:21,desc:'🎉 DIA 21! Você completou o protocolo! Celebre!'}
+  ]}
+];
+
+let diasConcluidos = new Set(JSON.parse(localStorage.getItem('pb21_dias') || '[]'));
+let chatHistory = [];
+let isSending = false;
+
+function salvar() { localStorage.setItem('pb21_dias', JSON.stringify([...diasConcluidos])); }
+
+function toggleDia(dia) {
+  if (diasConcluidos.has(dia)) { diasConcluidos.delete(dia); showToast('Dia ' + dia + ' desmarcado'); }
+  else {
+    diasConcluidos.add(dia);
+    if (dia === 21) showToast('🎉 Parabéns! Você completou os 21 dias!');
+    else showToast('✅ Dia ' + dia + ' concluído!');
+  }
+  salvar(); renderAll();
+}
+
+function renderAll() { renderHome(); renderReceitas(); renderChecklist(); }
+
+function renderHome() {
+  const done = diasConcluidos.size;
+  const pct = Math.round((done/21)*100);
+  document.getElementById('progressPct').textContent = pct+'%';
+  document.getElementById('progressFill').style.width = pct+'%';
+  document.getElementById('progressDays').textContent = done+' de 21 dias concluídos';
+  document.getElementById('statDias').textContent = done;
+  document.getElementById('welcomeDay').textContent = 'DIA '+Math.min(done+1,21)+' DE 21';
+  let seq=0; for(let i=done;i>=1;i--){if(diasConcluidos.has(i))seq++;else break;}
+  document.getElementById('statSeq').textContent = seq;
+  const grid = document.getElementById('daysGrid'); grid.innerHTML='';
+  for(let i=1;i<=21;i++){
+    const el=document.createElement('div');
+    const ok=diasConcluidos.has(i), today=i===done+1&&done<21;
+    el.className='day-cell'+(ok?' done':today?' today':i>done+1?' locked':'');
+    el.textContent=i;
+    if(ok||today) el.onclick=()=>toggleDia(i); else el.style.cursor='default';
+    grid.appendChild(el);
+  }
+  const diaAtual=Math.min(done+1,21);
+  const r=receitas.find(x=>x.dia===diaAtual)||receitas[0];
+  document.getElementById('todayRecipe').innerHTML=`
+    <div class="today-badge">Receita do Dia ${diaAtual}</div>
+    <div class="today-recipe-name">${r.nome}</div>
+    <div class="today-recipe-desc">${r.desc}</div>
+    <div style="display:flex;gap:8px;margin-bottom:12px"><span class="recipe-tag tag-tempo">⏱ ${r.tempo}</span><span class="recipe-tag tag-kcal">🔥 ${r.kcal}</span></div>
+    <button class="btn-ver-receita" onclick="showReceitaDetalhe(${r.id})">Ver receita completa →</button>`;
+}
+
+function renderReceitas() {
+  document.getElementById('receitasContainer').innerHTML = receitas.map(r=>`
+    <div class="recipe-card" onclick="showReceitaDetalhe(${r.id})">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px">
+        <div><div class="recipe-name">🍮 ${r.nome}</div><div class="recipe-desc">${r.desc}</div></div>
+        <div style="font-size:20px;color:#7C3AED;flex-shrink:0">›</div>
+      </div>
+      <div class="recipe-meta"><span class="recipe-tag tag-tempo">⏱ ${r.tempo}</span><span class="recipe-tag tag-kcal">🔥 ${r.kcal}</span><span class="recipe-tag tag-dif">📅 Dia ${r.dia}</span></div>
+    </div>`).join('');
+}
+
+function showReceitaDetalhe(id) {
+  const r=receitas.find(x=>x.id===id); if(!r)return;
+  document.getElementById('receitasList').style.display='none';
+  const d=document.getElementById('receitaDetalhe'); d.classList.add('active');
+  d.innerHTML=`
+    <button class="recipe-back" onclick="closeReceitaDetalhe()">← Voltar às receitas</button>
+    <div class="recipe-detail-name">🍮 ${r.nome}</div>
+    <div class="recipe-detail-desc">${r.desc}</div>
+    <div class="recipe-info-row"><span class="info-pill tag-tempo">⏱ ${r.tempo}</span><span class="info-pill tag-kcal">🔥 ${r.kcal}</span><span class="info-pill tag-dif">📅 Dia ${r.dia}</span></div>
+    <div class="ingredientes-title">🛒 Ingredientes</div>
+    ${r.ingredientes.map(i=>`<div class="ingrediente-item">${i}</div>`).join('')}
+    <div class="preparo-title">👩‍🍳 Modo de Preparo</div>
+    ${r.preparo.map((p,i)=>`<div class="preparo-item"><div class="preparo-num">${i+1}</div><div>${p}</div></div>`).join('')}
+    <div class="dica-box"><strong>💡 Dica:</strong> ${r.dica}</div>`;
+  showPage('receitas',document.querySelector('.nav-item:nth-child(2)'),false);
+  window.scrollTo(0,0);
+}
+
+function closeReceitaDetalhe() {
+  document.getElementById('receitasList').style.display='block';
+  const d=document.getElementById('receitaDetalhe'); d.classList.remove('active'); d.innerHTML='';
+}
+
+function renderChecklist() {
+  document.getElementById('checklistContainer').innerHTML = checklistDias.map(s=>`
+    <div class="checklist-week">
+      <div class="week-header"><span class="week-title">Semana ${s.semana}</span><span class="week-meta">${s.objetivo}</span></div>
+      <div class="week-objetivo">🎯 Missão: ${s.missao}</div>
+      ${s.dias.map(d=>{const ok=diasConcluidos.has(d.n);return`<div class="check-item-row ${ok?'checked':''}" onclick="toggleDia(${d.n})"><div class="check-circle">${ok?'✓':''}</div><div class="check-day-num ${ok?'checked':''}">Dia ${d.n}</div><div class="check-day-text ${ok?'checked':''}">${d.desc}</div></div>`;}).join('')}
+    </div>`).join('');
+}
+
+function showPage(page, el, scroll=true) {
+  document.querySelectorAll('.page,.page-chat').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  const pid='page'+page.charAt(0).toUpperCase()+page.slice(1);
+  document.getElementById(pid).classList.add('active');
+  if(el) el.classList.add('active');
+  if(scroll) window.scrollTo(0,0);
+  if(page==='assistente' && chatHistory.length===0) msgBoasVindas();
+}
+
+function calcularIMC() {
+  const peso=parseFloat(document.getElementById('imcPeso').value);
+  const alt=parseFloat(document.getElementById('imcAltura').value)/100;
+  if(!peso||!alt||peso<30||alt<1){showToast('Preencha peso e altura');return;}
+  const imc=(peso/(alt*alt)).toFixed(1);
+  let cat,cor;
+  if(imc<18.5){cat='Abaixo do peso';cor='#3B82F6';}
+  else if(imc<25){cat='Peso normal ✓';cor='#16A34A';}
+  else if(imc<30){cat='Sobrepeso';cor='#F59E0B';}
+  else if(imc<35){cat='Obesidade Grau I';cor='#EF4444';}
+  else if(imc<40){cat='Obesidade Grau II';cor='#DC2626';}
+  else{cat='Obesidade Grau III';cor='#7F1D1D';}
+  document.getElementById('imcResult').textContent=imc;
+  document.getElementById('imcCategory').textContent=cat;
+  document.getElementById('imcCard').style.background=`linear-gradient(135deg,${cor},${cor}cc)`;
+}
+
+// ===== ASSISTENTE IA (Anthropic Claude) =====
+function msgBoasVindas() {
+  addMsg('bot','Olá! 😊 Sou sua assistente do Protocolo Bariátrico 21!\n\nEstou aqui para te ajudar com dúvidas sobre:\n• Calorias e alimentação\n• As receitas do protocolo\n• Dicas para acelerar resultados\n• Como lidar com a compulsão\n\nComo posso te ajudar hoje?');
+}
+
+function addMsg(tipo, texto) {
+  const msgs = document.getElementById('chatMsgs');
+  const div = document.createElement('div');
+  div.className = 'msg ' + tipo;
+  div.innerHTML = `
+    <div class="msg-av">${tipo==='user'?'👤':'🤖'}</div>
+    <div class="msg-buble">${texto.replace(/\n/g,'<br>')}</div>`;
+  msgs.appendChild(div);
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
+function showTyping() {
+  const msgs = document.getElementById('chatMsgs');
+  const div = document.createElement('div');
+  div.className = 'msg bot'; div.id = 'typing';
+  div.innerHTML = '<div class="msg-av">🤖</div><div class="typing"><span></span><span></span><span></span></div>';
+  msgs.appendChild(div);
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
+function removeTyping() {
+  const t = document.getElementById('typing');
+  if(t) t.remove();
+}
+
+function enviarSugestao(btn) {
+  const texto = btn.textContent;
+  document.getElementById('chatInput').value = texto;
+  enviarMsg();
+}
+
+function handleKey(e) {
+  if(e.key==='Enter' && !e.shiftKey){e.preventDefault();enviarMsg();}
+}
+
+async function enviarMsg() {
+  if(isSending) return;
+  const input = document.getElementById('chatInput');
+  const texto = input.value.trim();
+  if(!texto) return;
+
+  isSending = true;
+  document.getElementById('btnSend').disabled = true;
+  input.value = '';
+
+  addMsg('user', texto);
+  chatHistory.push({role:'user', content: texto});
+
+  showTyping();
+
+  const done = diasConcluidos.size;
+  const sistemaPrompt = `Você é a Assistente Bariátrica, uma especialista em nutrição e emagrecimento do aplicativo "Protocolo Bariátrico 21".
+
+Contexto do usuário:
+- Está no Dia ${Math.min(done+1,21)} do protocolo (completou ${done} dias de 21)
+- O protocolo consiste em consumir gelatinas fit diariamente para ativar o metabolismo naturalmente
+- O método ativa o GLP-1 natural, hormônio da saciedade
+- Gelatinas são consumidas 2x ao dia: tarde e após jantar
+
+Sua personalidade:
+- Calorosa, motivadora e empática
+- Fala de forma simples e direta
+- Usa emojis moderadamente
+- Sempre encoraja a continuar o protocolo
+- Nunca substitui consulta médica, mas orienta de forma geral
+
+Responda em português brasileiro, de forma concisa (máximo 150 palavras). Se perguntarem sobre calorias, oriente para 1200-1600 kcal/dia para emagrecimento, variando conforme peso e altura. Sempre relacione as respostas ao protocolo quando possível.`;
+
+  try {
+    // Monta o histórico de mensagens para a API da Anthropic
+    const messages = chatHistory.map(m => ({
+      role: m.role,
+      content: m.content
+    }));
+
+    const GEMINI_KEY = 'AIzaSyDxcxn2aLE8gadsCT0HMT_whW-9nTee3RM';
+
+    const resp = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_KEY}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          system_instruction: { parts: [{ text: sistemaPrompt }] },
+          contents: chatHistory.map(m => ({
+            role: m.role === 'assistant' ? 'model' : m.role,
+            parts: [{ text: m.content }]
+          }))
+        })
+      }
+    );
+
+    const data = await resp.json();
+    const resposta = data?.candidates?.[0]?.content?.parts?.[0]?.text || 'Desculpe, não consegui responder agora. Tente novamente!';
+
+    removeTyping();
+    addMsg('bot', resposta);
+    chatHistory.push({role:'assistant', content: resposta});
+
+  } catch(e) {
+    removeTyping();
+    addMsg('bot','Ops! Houve um erro de conexão. Verifique sua internet e tente novamente. 🙏');
+    // Remove a última mensagem do usuário do histórico em caso de erro
+    chatHistory.pop();
+  }
+
+  isSending = false;
+  document.getElementById('btnSend').disabled = false;
+  input.focus();
+}
+
+function showToast(msg) {
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2500);
+}
+
+renderAll();
+</script>
+</body>
+</html>
